@@ -5,6 +5,17 @@ set -euo pipefail
 CA_NAME="iot-ca"
 CERT_NAME="device-cert"
 
+# Use WSL IP from hostname -I
+cp /etc/hosts /etc/hosts2
+sed -i '/127.0.0.1/s/^/#/g' /etc/hosts2
+cat /etc/hosts2 >> /etc/hosts
+echo "172.17.174.174 localhost" >> /etc/hosts
+echo "edited file is"
+cat /etc/hosts
+
+# Reverse proxy required as we can't use IP:port in mqtt connect in python
+nginx
+
 if [ -n "${C8YDM_MQTT_CERT_AUTH:-}" ] && [ $C8YDM_MQTT_CERT_AUTH = "true" ]; then
     # use container id as serial if not manual provided
     if [ -n "${C8YDM_AGENT_DEVICE__ID}" ]; then

@@ -72,6 +72,7 @@ class Bootstrap():
         client.on_disconnect = self.on_disconnect
 
         credentials = self.configuration.getBootstrapCredentials()
+        self.logger.debug(credentials)
         if self.tls:
              client.tls_set(certifi.where())
         client.username_pw_set(credentials[0] + '/' + credentials[1], credentials[2])

@@ -33,8 +33,8 @@ class RestClient():
         self.file_path = agent.path / 'binaries'
         self.file_path.mkdir(parents=True, exist_ok=True)
         self.base_url = agent.url
-        if not self.base_url.startswith('http'):
-            self.base_url = f'https://{self.base_url}'
+        # if not self.base_url.startswith('http'):
+        self.base_url = f'http://{self.base_url}'
         self.token = agent.token
 
     def update_token(self, token):

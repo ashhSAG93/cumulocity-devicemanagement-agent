@@ -16,7 +16,7 @@ function env_build_arg() {
     done
     echo $BUILD_ARG_ARG
 }
-docker build -t $DOCKER_IMAGE_NAME -f "$DOCKER_FILE_PATH" $(env_build_arg) .
+docker build --no-cache -t $DOCKER_IMAGE_NAME -f "$DOCKER_FILE_PATH" $(env_build_arg) .
 # check interactivity
 INTERACTIVITY_ARG='-d'
 if [ "${INTERACTIVE:-}" = 1 ]

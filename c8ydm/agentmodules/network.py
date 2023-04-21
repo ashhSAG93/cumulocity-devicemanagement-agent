@@ -38,6 +38,7 @@ class Network(Initializer):
         try:
             self.logger.info(f'Network Initializer called...')
             ip = socket.gethostbyname(socket.gethostname())
+            self.logger.info(f'IP is {ip}')
             netmask = ipaddress.IPv4Network(ip).netmask
             name = None
             mac = self.get_mac()

@@ -13,7 +13,8 @@ RUN apt-get update \
     openssh-server \
     curl \
     gpg \
-    lsb-release
+    lsb-release \
+    nginx
 
 #
 # Install Docker CE CLI
@@ -24,6 +25,10 @@ RUN  echo \
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 RUN apt-get update \
     && apt-get -y install docker-ce-cli
+
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+RUN rm -rf /etc/nginx/sites-enabled/default
 
 # Install VNC server and desktop environment
 ARG INSTALL_VNC=1
@@ -57,6 +62,7 @@ COPY ./config/DM_Agent.json /root/.cumulocity/DM_Agent.json
 # # Install requirements (using pip)
 COPY setup.py README.md requirements.txt ./
 COPY ./c8ydm ./c8ydm
+COPY ./c8ydm/default.conf /etc/nginx/conf.d/
 COPY ./scripts ./scripts
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt

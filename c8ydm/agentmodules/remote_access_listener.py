@@ -22,7 +22,8 @@ from typing import List, Optional
 from requests.auth import HTTPBasicAuth
 from c8ydm.framework.modulebase import Listener
 from c8ydm.framework.smartrest import SmartRESTMessage
-from c8ydp.device_proxy import DeviceProxy, WebSocketFailureException
+# from c8ydp.device_proxy import DeviceProxy, WebSocketFailureException
+from c8ydm.agentmodules.device_proxy import DeviceProxy, WebSocketFailureException
 from c8ydm.utils import Configuration
 
 class RemoteAccessListener(Listener):
@@ -34,14 +35,17 @@ class RemoteAccessListener(Listener):
     fragment = 'c8y_RemoteAccessConnect'
 
     def _set_executing(self):
+        self.logger.info(f"Executing template of operation {self.fragment}")
         executing = SmartRESTMessage('s/us', '501', [self.fragment])
         self.agent.publishMessage(executing)
 
     def _set_success(self):
+        self.logger.info(f"Operation executed successfully")
         success = SmartRESTMessage('s/us', '503', [self.fragment])
         self.agent.publishMessage(success)
 
     def _set_failed(self, reason):
+        self.logger.info(f"Operations failed due to {reason}")
         failed = SmartRESTMessage('s/us', '502', [self.fragment, reason])
         self.agent.publishMessage(failed)
 
@@ -51,6 +55,7 @@ class RemoteAccessListener(Listener):
             Raises:
             Exception: Error when handling the operation
        """
+        self.logger.info("Attempting to Handle operation")
         try:
             #self.logger.debug(
             #    f'Handling Cloud Remote Access operation: listener={__name__}, message={message}')
@@ -61,6 +66,7 @@ class RemoteAccessListener(Listener):
             return
 
         except Exception as ex:
+            self.logger.info(f'Exception while handling operation is {ex}')
             self.logger.error(f'Handling operation error. exception={ex}')
             self._set_failed(str(ex))
             # raise
@@ -69,6 +75,7 @@ class RemoteAccessListener(Listener):
         """
         Creates the Device Proxy and connects to WebSocket and TCP Port
         """
+        self.logger.info("Attempting proxy_connect")
         tcp_host = message.values[1]
         tcp_port = int(message.values[2])
         connection_key = message.values[3]
@@ -91,6 +98,7 @@ class RemoteAccessListener(Listener):
         base_url = config.getValue('mqtt', 'url')
          # Not sure which buffer size is good, starting with 16 KB (16 x 1024)
         #buffer_size = self.utils.config.getint('remote-connect', 'tcp.buffer.size')
+        self.logger.info(f"TCP Host is {tcp_host}, TCP Port is {tcp_port}, Connection Key is {connection_key}, Base URL is {base_url}")
         self._device_proxy = DeviceProxy(
             tcp_host, tcp_port, None, connection_key, base_url, tenantuser, password, token, None)
         self._device_proxy.connect()
