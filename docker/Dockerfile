@@ -44,11 +44,11 @@ RUN if [ "$INSTALL_VNC" = "1" ]; then \
         && chmod 600 /root/.vnc/passwd; \
     fi
 
-# Set root passwd for container
-RUN mkdir /var/run/sshd
-RUN echo 'root:test123#' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# # Set root passwd for container (SSH Username password)
+# RUN mkdir /var/run/sshd
+# RUN echo 'root:test123#' | chpasswd
+# RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
 # Configure bash settings
 RUN echo "source /etc/profile.d/bash_completion.sh" >> "/root/.bashrc"
@@ -64,6 +64,20 @@ COPY setup.py README.md requirements.txt ./
 COPY ./c8ydm ./c8ydm
 COPY ./c8ydm/default.conf /etc/nginx/conf.d/
 COPY ./scripts ./scripts
+
+RUN mkdir -p /root/.ssh && \
+    chmod 0700 /root/.ssh
+
+COPY ./config/id_rsa /root/.ssh/id_rsa
+COPY ./config/id_rsa.pub /root/.ssh/id_rsa.pub
+
+# Add the keys and set permissions
+RUN chmod 600 /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa.pub
+
+RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys
+
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 RUN pip3 install .
