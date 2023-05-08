@@ -137,5 +137,5 @@ deb_dist/
 
 # keys
 *.pub
-c8ydm/config/id_rsa
-c8ydm/config/ca/CA_key
+*_rsa
+*_key
