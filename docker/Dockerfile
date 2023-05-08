@@ -68,15 +68,25 @@ COPY ./scripts ./scripts
 RUN mkdir -p /root/.ssh && \
     chmod 0700 /root/.ssh
 
-COPY ./config/id_rsa /root/.ssh/id_rsa
 COPY ./config/id_rsa.pub /root/.ssh/id_rsa.pub
 
-# Add the keys and set permissions
-RUN chmod 600 /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa.pub
+RUN chmod 600 /root/.ssh/id_rsa.pub
 
-RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
-RUN chmod 600 /root/.ssh/authorized_keys
+# Uncomment when you need public-private keypair
+# RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+# RUN chmod 600 /root/.ssh/authorized_keys
+
+# Certificate based auth
+RUN mkdir /etc/ssh/ca
+ADD ./config/ca/* /etc/ssh/ca
+
+RUN chmod 600 /etc/ssh/ca/CA_key
+
+RUN ssh-keygen -s /etc/ssh/ca/CA_key -I "root-cert" -n "root" /root/.ssh/id_rsa.pub
+RUN ls /root/.ssh/*-cert.pub | xargs -n 1 echo HostCertificate >> /etc/ssh/sshd_config
+
+RUN echo "TrustedUserCAKeys /etc/ssh/ca/CA_key.pub" >> /etc/ssh/sshd_config
+RUN echo "PubkeyAcceptedKeyTypes=+ssh-dss,ssh-dss-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com" >> /etc/ssh/sshd_config
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
